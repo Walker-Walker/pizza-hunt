@@ -1,18 +1,62 @@
-const { Schema, model } = require('mongoose')
+const moment = require("moment");
+const { Schema, model, Types } = require("mongoose");
+const Pizza = require("./Pizza");
 
-const CommentSchema = new Schema ({
-    writtenBy: {
-        type: String
+const ReplySchema = new Schema(
+  {
+    //set custom id to avoid confusion with parent comment_id
+    replyId: {
+      type: Schema.Types.ObjectId,
+      default: () => new Types.ObjectId(),
     },
-    commentBody: {
-        type: String
+    replyBody: {
+      type: String,
+    },
+    writtenBy: {
+      type: String,
     },
     createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
+      type: Date,
+      default: Date.now,
+      get: (createdAtVal) =>
+        moment(createdAtVal).format("MMM DD, YYYY [at] hh:mm a"),
+    },
+  },
+  {
+    toJSON: {
+      getters: true,
+    },
+  }
+);
 
-const Comment = model('Comment', CommentSchema);
+const CommentSchema = new Schema(
+  {
+    writtenBy: {
+      type: String,
+    },
+    commentBody: {
+      type: String,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      get: (createdAtVal) =>
+        moment(createdAtVal).format("MMM DD, YYYY [at] hh:mm a"),
+    },
+    replies: [ReplySchema],
+  },
+  {
+    toJSON: {
+      virtuals: true,
+      getters: true,
+    },
+    id: false,
+  }
+);
 
-module.exports = Comment; 
+CommentSchema.virtual("replyCount").get(function () {
+    return this.replies.length;
+  });
+const Comment = model("Comment", CommentSchema);
+
+module.exports = Comment;
