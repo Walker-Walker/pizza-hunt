@@ -63,6 +63,7 @@ const handlePizzaSubmit = (event) => {
     })
     .catch(err => {
       console.log(err);
+      saveRecord(formData);//save pizza w/out internet connection to new_pizza object store in browsers IndexedDB database : pizza_hunt
     });
 };
 
